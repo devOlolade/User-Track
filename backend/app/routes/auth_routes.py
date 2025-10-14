@@ -7,7 +7,7 @@ from flask_mail import Message, Mail
 from app import mail
 from datetime import timedelta
 import secrets
-
+from app.utils.audit import log_action
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -28,8 +28,9 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({"message": "User registered successfully"}), 201
+    log_action(new_user.id, f"Registered new account with email {email}")
 
+    return jsonify({"message": "User registered successfully"}), 201
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
@@ -43,10 +44,9 @@ def login():
     if not user or not user.check_password(password):  # ✅ check hash
         return {"msg": "Invalid email or password"}, 401
     access_token = create_access_token(identity=str(user.id))
+
+    log_action(user.id, "User logged in")
     return jsonify({"access_token": access_token}), 200
-from flask import request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.models import User, db
 
 @auth_bp.route('/change-password', methods=['PUT'])
 @jwt_required()
@@ -70,6 +70,7 @@ def change_password():
     user.set_password(new_password)
     db.session.commit()
 
+    log_action(user.id, "Changed password")
     return jsonify({"msg": "Password updated successfully!"}), 200
 
 @auth_bp.route('/forgot-password', methods=['POST'])
@@ -95,6 +96,7 @@ def forgot_password():
     msg.body = f"Click the link to reset your password: {reset_link}"
     mail.send(msg)
 
+    log_action(user.id, "Requested password reset")
     return jsonify({"msg": "Password reset link sent to email!"}), 200
 
 @auth_bp.route('/reset-password/<token>', methods=['POST'])
@@ -118,5 +120,6 @@ def reset_password(token):
     user.password = generate_password_hash(new_password)
     db.session.commit()
 
+    log_action(user.id, "Password reset successful")
     return jsonify({"msg": "Password reset successful!"}), 200
 
