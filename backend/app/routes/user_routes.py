@@ -182,6 +182,6 @@ def get_audit_logs():
             'actor': log.actor,
             "action": log.action,
             "timestamp": log.timestamp.isoformat(),
-            "ip": log.ip_address
+            "ip_address": log.ip_address
         } for log in logs
     ])

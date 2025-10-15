@@ -5,6 +5,7 @@ from flask_jwt_extended import JWTManager
 from .config import Config
 from flask_migrate import Migrate
 from flask_mail import Mail
+from flask_cors import CORS
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -15,6 +16,8 @@ mail = Mail()
 def create_app():
     app = Flask(__name__)
     app.config.from_object("app.config.Config")
+
+    CORS(app, resources={r"/*": {"origins": ["http://localhost:5173"]}})
 
     # Initialize extensions
     db.init_app(app)

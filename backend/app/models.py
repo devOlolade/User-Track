@@ -12,7 +12,7 @@ class User(db.Model):
     role = db.Column(db.String(50), default="user")  # 👈 new field
     is_active = db.Column(db.Boolean, default=True) 
 
-    user = db.relationship("User", backref="audit_logs")
+   
 
     def __repr__(self):
         return f"<User {self.email}>"
@@ -34,6 +34,7 @@ class AuditLog(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     ip_address = db.Column(db.String(45), nullable=True)
 
+    user = db.relationship("User", backref="audit_logs")
 
 
     def __repr__(self):

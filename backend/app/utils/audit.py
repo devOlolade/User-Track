@@ -12,7 +12,7 @@ def log_action(user_id, action):
         user_id=user_id,
         actor=actor_name,
         action=action,
-        ip_=request.remote_addr
+        ip_address=request.remote_addr
     )
     db.session.add(log)
     db.session.commit()
