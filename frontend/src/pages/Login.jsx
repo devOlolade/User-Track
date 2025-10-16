@@ -39,7 +39,7 @@ const Login = () => {
           <div className="form-header">
             <h3>Get Started Now</h3>
             <p>Enter your credentials to access your account. Have an account?</p>
-            <a href="#">Register here</a>
+            <a href="/register">Register here</a>
           </div>
           <div className="google-btn">
             <button>

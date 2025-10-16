@@ -1,13 +1,15 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Register from "./pages/Register";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
-  return token ? children : <Navigete to="/login" replace />;
+  return token ? children : <Navigate to="/login" replace />;
 };
+
 
 
 function App() {

@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+body{
+    background: #f5f5f5;
+}
+.login-page{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    height: 100vh;
+    padding: 20px 30px;
+}
+.login-container{
+    width: 70%;
+    align-self: center;
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 100px;
+    align-items: center;
+}
+.login-left{
+    width: 70%;
+}
+.login-left h1{
+    line-height: auto;
+    font-size: 50px;
+    color: #000
+}
+.login-left span{
+    color: #1B77EE;
+}
+.login-right{
+    display:flex;
+    flex-direction: column;
+    gap:20px;
+    width: 100%;
+    padding: 50px;
+    background: white;
+    border-radius: 10px;
+}
+.login-right p{
+    color: grey;
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+.login-right a{
+    color: #1B77EE;
+    font-size: 0.8rem;
+}
+.google-btn img{
+    width: 20px;
+    height: 20px;
+}
+.google-btn button{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color:transparent;
+    border:1px solid #1B77EE;
+    color: #000;
+    gap: 5px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.divider{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    color: grey;
+    font-size: 0.8rem;
+}
+.divider hr{
+    width: 100%;
+}
+form{
+    display: flex;
+    flex-direction: column;
+    gap:15px;
+}
+.input-container{
+    display:flex;
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+}
+.form-input{
+    display:flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+}
+.form-input label{
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgb(57, 57, 57);
+}
+
+.input-field{
+    display:flex;
+    flex-direction: row;
+    padding: 10px 10px;
+    border-radius: 5px;
+    gap: 10px;
+    width: 100%;
+    border: 1px solid lightgrey;
+}
+.input-field input{
+    border: none;
+    outline: none;
+    width: 100%;
+    background: none;
+    font-size: 0.9rem;
+    color:black
+}
+.input-field i{
+    color: grey;
+}
+.logo img{
+    width: 130px;
+    height: auto;
+    
+}
+.passwordIcon, .briefcaseIcon{
+    width: 20px;
+    height: 20px;
+}
+.showPassword{
+    width: 25px;
+    height: 20px;
+    cursor: pointer;
+}
+form button{
+    background-color: #1B77EE;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.footer{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+    font-size: 0.9rem;
+    color: grey; 
+}
+.footer a{
+    color: grey;
+    text-decoration: none;
+}
+.message{
+    color: red;
+    font-size: 0.8rem;
+    margin-top: 10px;
+    text-align: center;
+}

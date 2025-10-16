@@ -1,53 +1,80 @@
 from flask import Blueprint, request, jsonify
 from app.models import db, User
-from flask_jwt_extended import create_access_token, decode_token
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_mail import Message, Mail
+from flask_jwt_extended import create_access_token, decode_token, jwt_required, get_jwt_identity
+from werkzeug.security import generate_password_hash
+from flask_mail import Message
 from app import mail
 from datetime import timedelta
-import secrets
 from app.utils.audit import log_action
 
 auth_bp = Blueprint("auth", __name__)
 
+# ✅ SUPER ADMIN ONLY REGISTRATION
 @auth_bp.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
-
     name = data.get("name")
     email = data.get("email")
     password = data.get("password")
+    organization = data.get("organization")
 
+     # Basic validation
+    if not name or not email or not password or not organization:
+        return jsonify({"message": "All fields are required"}), 400
+
+    # Check if user email already exists
     if User.query.filter_by(email=email).first():
         return jsonify({"message": "Email already exists"}), 400
 
-    new_user = User(name=name, email=email)
+    # Check if the organization already has a superadmin
+    existing_org = User.query.filter_by(organization=organization).first()
+
+    if existing_org:
+        # Org already exists → reject registration
+        return jsonify({
+            "message": "An account for this organization already exists. Please contact your Super Admin."
+        }), 400
+
+    # ✅ Create first user as Super Admin for this organization
+    new_user = User(
+        name=name,
+        email=email,
+        organization=organization,
+        role="superadmin"
+    )
     new_user.set_password(password)
 
     db.session.add(new_user)
     db.session.commit()
 
-    log_action(new_user.id, f"Registered new account with email {email}")
-
-    return jsonify({"message": "User registered successfully"}), 201
-
+    return jsonify({
+        "message": "Registration successful! You are the Super Admin for this organization.",
+        "role": new_user.role
+    }), 201
+   
+# ✅ LOGIN ENDPOINT
 @auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-
     email = data.get("email")
     password = data.get("password")
 
     user = User.query.filter_by(email=email).first()
 
-    if not user or not user.check_password(password):  # ✅ check hash
+    if not user or not user.check_password(password):
         return {"msg": "Invalid email or password"}, 401
-    access_token = create_access_token(identity=str(user.id))
 
+    access_token = create_access_token(identity=user.id)
     log_action(user.id, "User logged in")
-    return jsonify({"access_token": access_token}), 200
 
+    return jsonify({
+        "access_token": access_token,
+        "role": user.role,
+        "name": user.name
+    }), 200
+
+
+# ✅ PASSWORD MANAGEMENT ENDPOINTS (unchanged)
 @auth_bp.route('/change-password', methods=['PUT'])
 @jwt_required()
 def change_password():
@@ -73,6 +100,7 @@ def change_password():
     log_action(user.id, "Changed password")
     return jsonify({"msg": "Password updated successfully!"}), 200
 
+
 @auth_bp.route('/forgot-password', methods=['POST'])
 def forgot_password():
     data = request.get_json()
@@ -86,8 +114,6 @@ def forgot_password():
         return jsonify({"msg": "User with this email does not exist"}), 404
     
     reset_token = create_access_token(identity=user.id, expires_delta=timedelta(minutes=15))
-
-
     reset_link = f"http://127.0.0.1:5000/auth/reset-password/{reset_token}"
 
     msg = Message("Password Reset Request",
@@ -99,12 +125,13 @@ def forgot_password():
     log_action(user.id, "Requested password reset")
     return jsonify({"msg": "Password reset link sent to email!"}), 200
 
+
 @auth_bp.route('/reset-password/<token>', methods=['POST'])
 def reset_password(token):
     try:
         decoded_token = decode_token(token)
         user_id = decoded_token["sub"]
-    except Exception as e:
+    except Exception:
         return jsonify({"msg": "Invalid or expired token"}), 400
 
     data = request.get_json()
@@ -122,4 +149,3 @@ def reset_password(token):
 
     log_action(user.id, "Password reset successful")
     return jsonify({"msg": "Password reset successful!"}), 200
-

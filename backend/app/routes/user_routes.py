@@ -25,69 +25,59 @@ def get_profile():
         "email": user.email
     }), 200
 
-#CREATE a new user (admin or superadmin only)
+# ✅ CREATE USER (superadmin only, adds user under their organization)
 @user_bp.route("/", methods=["POST"])
-@role_required(["admin", "superadmin"])
+@role_required(["superadmin"])
 def create_user():
+    current_user_id = int(get_jwt_identity())
+    current_user = User.query.get(current_user_id)
+
     data = request.get_json()
     name = data.get("name")
     email = data.get("email")
+    password = data.get("password")  # ✅ allow password input
     role = data.get("role", "user")
     is_active = data.get("is_active", True)
 
-    if not name or not email:
-        return {"msg": "Name and email are required"}, 400
-    
-    if role not in ["user", "admin", "superadmin"]:
+    # ✅ Validate required fields
+    if not name or not email or not password:
+        return {"msg": "Name, email, and password are required"}, 400
+
+    if User.query.filter_by(email=email).first():
+        return {"msg": "Email already exists"}, 400
+
+    # ✅ New users inherit Super Admin's organization
+    organization = current_user.organization
+
+    # ✅ Restrict role assignment — Super Admin can’t create another Super Admin for now
+    if role not in ["user", "admin"]:
         return {"msg": "Invalid role"}, 400
 
-    new_user = User(name=name, email=email, role=role, is_active=is_active)
+    new_user = User(
+        name=name,
+        email=email,
+        role=role,
+        is_active=is_active,
+        organization=organization
+    )
+    new_user.set_password(password)
+
     db.session.add(new_user)
     db.session.commit()
 
-    current_user_id = int(get_jwt_identity())
-    log_action(current_user_id, f"Created user {new_user.id} ({new_user.email}, role={new_user.role})")
+    log_action(current_user_id, f"Added new user {email} (role={role}) under {organization}")
 
     return jsonify({
-        "msg": "User created successfully",
+        "msg": f"User {name} added successfully under {organization}",
         "id": new_user.id,
         "name": new_user.name,
         "email": new_user.email,
         "role": new_user.role,
+        "organization": new_user.organization,
         "is_active": new_user.is_active
     }), 201
 
-#list all users
-@user_bp.route("/", methods=["GET"])
-@role_required(["admin", "superadmin"])
-def list_users():
-    current_user_id = int(get_jwt_identity())
-    users = User.query.all()
 
-    log_action(current_user_id, "Viewed all users")
-    return jsonify([
-        {"id": u.id, "name": u.name, "email": u.email, "role": u.role, "is_active": u.is_active}
-        for u in users
-    ]), 200
-
-#GET a specific user by ID
-@user_bp.route("/<int:user_id>", methods=["GET"])
-@role_required(["admin", "superadmin"])
-def get_user(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return {"msg": "User not found"}, 404
-    
-    current_user_id = int(get_jwt_identity())
-    log_action(current_user_id, f"Viewed user {user.id}")
-
-    return {
-        "id": user.id,
-        "name": user.name,
-        "email": user.email,
-        "role": user.role,
-        "is_active": user.is_active
-    }, 200
 
 
 @user_bp.route("/<int:user_id>", methods=["PUT"])
